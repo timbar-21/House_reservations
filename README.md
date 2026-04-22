@@ -1,161 +1,115 @@
 # House Reservations
 
-A Flask web app for browsing and booking house rentals. Includes 5 sample properties, availability checking to prevent double-bookings, and a full reservation flow with confirmation pages.
+A static HTML/CSS/JS house reservation site hosted on **GitHub Pages**, backed by **Google Sheets** for data storage, **Google Calendar** for booking events, and **Google Apps Script** as a serverless backend.
+
+No server required. Completely free to host and run.
+
+---
+
+## Architecture
+
+```
+Browser (GitHub Pages)
+  │
+  ├── reads availability ──► Apps Script doGet ──► Google Sheet
+  └── submits booking    ──► Apps Script doPost ──► Google Sheet
+                                                 ──► Google Calendar
+                                                 ──► Email (guest + owner)
+```
+
+---
+
+## Setup Guide
+
+### Step 1 — Create the Google Sheet
+
+1. Go to [sheets.google.com](https://sheets.google.com) and create a new spreadsheet.
+2. Rename the first tab to **Reservations**.
+3. Add these headers in row 1:
+
+   | A | B | C | D | E | F | G | H | I | J |
+   |---|---|---|---|---|---|---|---|---|---|
+   | ID | Property ID | Property Name | Guest Name | Guest Email | Check-in | Check-out | Guests | Total Price | Created At |
+
+4. Copy the **Spreadsheet ID** from the URL:
+   `https://docs.google.com/spreadsheets/d/`**`SPREADSHEET_ID`**`/edit`
+
+---
+
+### Step 2 — Get your Google Calendar ID
+
+1. Open [calendar.google.com](https://calendar.google.com).
+2. Hover over the calendar you want to use → click the three-dot menu → **Settings and sharing**.
+3. Scroll down to **Integrate calendar** and copy the **Calendar ID**.
+   - For your primary calendar it will be your Gmail address.
+   - For other calendars it looks like `abc123xyz@group.calendar.google.com`.
+
+---
+
+### Step 3 — Deploy the Apps Script
+
+1. Go to [script.google.com](https://script.google.com) and click **New project**.
+2. Delete the default code and paste the entire contents of `apps-script/Code.gs`.
+3. Click **Project Settings** (gear icon) → **Script Properties** → **Add script property** for each of the following:
+
+   | Property | Value |
+   |---|---|
+   | `SPREADSHEET_ID` | The ID you copied in Step 1 |
+   | `CALENDAR_ID` | The calendar ID from Step 2 |
+   | `NOTIFY_EMAIL` | Your email (optional — receives an alert on each booking) |
+
+4. Click **Deploy → New deployment**.
+   - Type: **Web app**
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+5. Click **Deploy** and copy the **Web app URL**.
+
+---
+
+### Step 4 — Add the Apps Script URL to the site
+
+Open `static/js/app.js` and replace the placeholder on line 3:
+
+```js
+const CONFIG = {
+  appsScriptUrl: 'PASTE_YOUR_WEB_APP_URL_HERE',
+};
+```
+
+---
+
+### Step 5 — Publish on GitHub Pages
+
+1. Push all changes to the `main` branch of your GitHub repository.
+2. Go to your repo on GitHub → **Settings → Pages**.
+3. Under **Source**, select **Deploy from a branch** → branch: `main`, folder: `/ (root)`.
+4. Click **Save**. GitHub will give you a URL like `https://timbar-21.github.io/House_reservations/`.
+
+Every push to `main` automatically updates the live site.
+
+---
 
 ## Running Locally
 
+No build step needed — just open `index.html` in a browser, or serve it with any static file server:
+
 ```bash
-pip install -r requirements.txt
-python app.py
+python3 -m http.server 8000
+# then visit http://localhost:8000
 ```
 
-Visit `http://localhost:5000` in your browser.
+Note: availability fetching and booking submission require the Apps Script to be deployed first.
 
 ---
 
-## Hosting Options
+## Customising Properties
 
-### Option 1 — Render (Recommended, free tier)
-
-Render connects directly to your GitHub repo and auto-deploys on every push.
-
-1. Add `gunicorn` to `requirements.txt`:
-   ```
-   Flask==3.0.3
-   Flask-SQLAlchemy==3.1.1
-   gunicorn==22.0.0
-   ```
-2. Go to [render.com](https://render.com) and sign in with GitHub.
-3. Click **New → Web Service** and select this repository.
-4. Configure the service:
-   - **Branch:** `main`
-   - **Build command:** `pip install -r requirements.txt`
-   - **Start command:** `gunicorn app:app`
-5. Click **Deploy**. Render provides a public URL automatically.
-
-Every push to `main` triggers a redeploy.
+Properties are defined in `static/js/app.js` in the `PROPERTIES` array. Edit the name, location, price, bedrooms, bathrooms, and description for each one. Add or remove entries as needed.
 
 ---
 
-### Option 2 — Railway
+## How It Works
 
-1. Go to [railway.app](https://railway.app) and sign in with GitHub.
-2. Click **New Project → Deploy from GitHub repo** and select this repository.
-3. Railway detects Flask automatically. Set the start command to `gunicorn app:app`.
-4. Add `gunicorn` to `requirements.txt` (same as above).
-5. Click **Deploy** to get a public URL.
-
----
-
-### Option 3 — PythonAnywhere (Python-focused, free tier)
-
-1. Sign up at [pythonanywhere.com](https://pythonanywhere.com).
-2. Open a **Bash console** and clone your repo:
-   ```bash
-   git clone https://github.com/timbar-21/House_reservations.git
-   cd House_reservations
-   pip install -r requirements.txt
-   ```
-3. Go to the **Web** tab → **Add a new web app** → **Flask**.
-4. Set the source directory to `/home/<your-username>/House_reservations` and the WSGI file to point to `app`.
-5. Click **Reload** to go live.
-
----
-
-## Data Storage Options
-
-By default the app uses **SQLite** — a local file (`reservations.db`). This is fine locally but resets on every redeploy on cloud hosts. Two alternatives:
-
-### Option A — PostgreSQL (persistent, stays on the server)
-
-Render and Railway both offer a free hosted PostgreSQL database.
-
-1. Add `psycopg2-binary` to `requirements.txt`.
-2. In your host dashboard, create a PostgreSQL database and copy the connection URL.
-3. Set an environment variable `DATABASE_URL` on the host.
-4. Update `app.config` in `app.py`:
-   ```python
-   import os
-   app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///reservations.db")
-   ```
-   Flask-SQLAlchemy handles the rest — no other code changes needed.
-
----
-
-### Option B — Google Sheets (simplest, no database server needed)
-
-Store reservations directly in a Google Sheet instead of a database. Good for low-volume use where you want to view and manage bookings in a familiar spreadsheet.
-
-#### 1. Create the Google Sheet
-
-1. Create a new Google Sheet with these column headers in row 1:
-   ```
-   ID | House | Guest Name | Guest Email | Check-in | Check-out | Guests | Total Price | Created At
-   ```
-2. Note the **Spreadsheet ID** from the URL:
-   `https://docs.google.com/spreadsheets/d/<SPREADSHEET_ID>/edit`
-
-#### 2. Create a Google Service Account
-
-1. Go to [console.cloud.google.com](https://console.cloud.google.com).
-2. Create a new project (or use an existing one).
-3. Enable the **Google Sheets API**.
-4. Go to **IAM & Admin → Service Accounts** → **Create Service Account**.
-5. Download the JSON key file.
-6. Share your Google Sheet with the service account email address (give it **Editor** access).
-
-#### 3. Install the required library
-
-Add to `requirements.txt`:
-```
-gspread==6.1.2
-google-auth==2.29.0
-```
-
-#### 4. Replace the database calls in `app.py`
-
-Add this helper near the top of `app.py`:
-
-```python
-import gspread
-from google.oauth2.service_account import Credentials
-import os, json
-
-def get_sheet():
-    creds_json = os.environ.get("GOOGLE_CREDENTIALS")  # set this env var on your host
-    creds_dict = json.loads(creds_json)
-    creds = Credentials.from_service_account_info(
-        creds_dict,
-        scopes=["https://www.googleapis.com/auth/spreadsheets"],
-    )
-    client = gspread.authorize(creds)
-    return client.open_by_key(os.environ.get("SPREADSHEET_ID"))
-```
-
-Replace the reservation save block in the `reserve` route:
-
-```python
-# Instead of db.session.add / db.session.commit:
-sheet = get_sheet().sheet1
-row_id = len(sheet.get_all_values())  # use row count as ID
-sheet.append_row([
-    row_id,
-    house.name,
-    guest_name,
-    guest_email,
-    check_in.isoformat(),
-    check_out.isoformat(),
-    num_guests,
-    round(total_price, 2),
-    datetime.utcnow().isoformat(),
-])
-```
-
-#### 5. Set environment variables on your host
-
-| Variable | Value |
-|---|---|
-| `GOOGLE_CREDENTIALS` | The full contents of your service account JSON key |
-| `SPREADSHEET_ID` | The ID from your Google Sheet URL |
-
-Every new reservation will appear as a new row in your sheet instantly.
+- **Availability calendar** — on page load the site calls the Apps Script `doGet` endpoint, which reads the Sheet and returns all booked date ranges. The calendar colours booked dates red and available dates green.
+- **Booking form** — on submit, the site POSTs the booking data to the Apps Script `doPost` endpoint. Apps Script checks availability, writes a row to the Sheet, creates a Google Calendar all-day event spanning the stay, and emails the guest (and optionally you).
+- **No server** — GitHub Pages serves static files only. All dynamic logic runs inside Apps Script (Google's serverless environment), which is free for personal use.
