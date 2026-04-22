@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}My Reservations — HouseReserve{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>All Reservations</h1>
+  <p>{{ reservations|length }} reservation{{ 's' if reservations|length != 1 }} on record</p>
+</div>
+
+{% if reservations %}
+<div class="table-wrapper">
+  <table class="reservations-table">
+    <thead>
+      <tr>
+        <th>Confirmation</th>
+        <th>Property</th>
+        <th>Guest</th>
+        <th>Check-in</th>
+        <th>Check-out</th>
+        <th>Guests</th>
+        <th>Total</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in reservations %}
+      <tr>
+        <td><strong>#RES{{ "%04d"|format(r.id) }}</strong></td>
+        <td>{{ r.house.name }}</td>
+        <td>{{ r.guest_name }}</td>
+        <td>{{ r.check_in.strftime('%b %d, %Y') }}</td>
+        <td>{{ r.check_out.strftime('%b %d, %Y') }}</td>
+        <td>{{ r.num_guests }}</td>
+        <td>${{ "%.2f"|format(r.total_price) }}</td>
+        <td><a href="{{ url_for('reservation_detail', reservation_id=r.id) }}">View</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <p>No reservations yet.</p>
+  <a href="{{ url_for('houses') }}" class="btn btn--primary">Browse Houses</a>
+</div>
+{% endif %}
+{% endblock %}

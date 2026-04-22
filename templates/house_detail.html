@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ house.name }} — HouseReserve{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('houses') }}">All Houses</a> &rsaquo; {{ house.name }}
+</div>
+
+<div class="detail-layout">
+  <div class="detail-main">
+    <h1>{{ house.name }}</h1>
+    <p class="detail-location">{{ house.location }}</p>
+
+    <div class="detail-meta">
+      <span>{{ house.bedrooms }} bedroom{{ 's' if house.bedrooms != 1 }}</span>
+      <span>{{ house.bathrooms }} bathroom{{ 's' if house.bathrooms != 1 }}</span>
+      <span>Up to {{ house.max_guests }} guests</span>
+    </div>
+
+    <div class="detail-description">
+      <h2>About this property</h2>
+      <p>{{ house.description }}</p>
+    </div>
+  </div>
+
+  <div class="detail-sidebar">
+    <div class="booking-card">
+      <div class="booking-card__price">
+        ${{ "%.0f"|format(house.price_per_night) }}<small>/night</small>
+      </div>
+      <a href="{{ url_for('reserve', house_id=house.id) }}" class="btn btn--primary btn--block">
+        Reserve This House
+      </a>
+      <p class="booking-card__note">Free cancellation before check-in</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

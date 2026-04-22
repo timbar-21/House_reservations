@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}HouseReserve — Find Your Perfect Stay{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Find Your Perfect Home Away From Home</h1>
+  <p>Browse our curated collection of unique properties and book your next getaway.</p>
+  <a href="{{ url_for('houses') }}" class="btn btn--primary">Browse All Houses</a>
+</section>
+
+<section class="featured">
+  <h2>Featured Properties</h2>
+  <div class="house-grid">
+    {% for house in houses %}
+    <div class="house-card">
+      <div class="house-card__badge">{{ house.bedrooms }} bed · {{ house.bathrooms }} bath</div>
+      <div class="house-card__body">
+        <h3>{{ house.name }}</h3>
+        <p class="house-card__location">{{ house.location }}</p>
+        <p class="house-card__desc">{{ house.description[:120] }}...</p>
+        <div class="house-card__footer">
+          <span class="house-card__price">${{ "%.0f"|format(house.price_per_night) }}<small>/night</small></span>
+          <a href="{{ url_for('house_detail', house_id=house.id) }}" class="btn btn--outline">View Details</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
