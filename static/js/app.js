@@ -1,7 +1,7 @@
 // ─── Configuration ───────────────────────────────────────────────────────────
 // After deploying your Apps Script, paste the web app URL below.
 const CONFIG = {
-  appsScriptUrl: 'YOUR_APPS_SCRIPT_URL',
+  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbxTtLCsDnrUqTYSDV-1djcUyItROrKyjTGyQGSJicjcfihxFZQoDcs6nhox41MS9VldRw/exec',
 };
 
 // ─── Properties ──────────────────────────────────────────────────────────────
