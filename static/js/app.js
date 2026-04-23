@@ -203,7 +203,7 @@ async function fetchAvailability() {
 // ── Calendar ──────────────────────────────────────────────────────────────────
 function getDateStatus(date) {
   for (const r of bookedRanges) {
-    if (date >= r.checkIn && date < r.checkOut) {
+    if (date >= r.checkIn && date <= r.checkOut) {
       return r.status === 'pending' ? 'pending' : 'booked';
     }
   }
