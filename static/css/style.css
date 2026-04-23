@@ -276,6 +276,47 @@ a { text-decoration: none; }
 .amenity-name { font-size: 0.88rem; font-weight: 600; }
 .amenity-desc { font-size: 0.75rem; color: var(--muted); font-weight: 400; }
 
+.amenity-lists {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem 2rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+.amenity-list-heading {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--coral);
+  margin-bottom: 0.75rem;
+}
+.amenity-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.amenity-list li {
+  font-size: 0.85rem;
+  color: #4A5568;
+  padding-left: 1.4rem;
+  position: relative;
+  line-height: 1.4;
+}
+.amenity-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--teal);
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 480px) {
+  .amenity-lists { grid-template-columns: 1fr; }
+}
+
 /* ── Availability Section ────────────────────────────────────────────────── */
 .avail-section {
   background: var(--light);
