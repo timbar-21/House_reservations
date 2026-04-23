@@ -1,9 +1,12 @@
-// ─── Configuration ────────────────────────────────────────────────────────────
-// Set these in Apps Script → Project Settings → Script Properties:
+// Configuration — set these in Apps Script → Project Settings → Script Properties:
 //   SPREADSHEET_ID  — the ID from your Google Sheet URL
-//   CALENDAR_ID     — your Google Calendar ID (e.g. you@gmail.com or the
-//                     long ID from Calendar Settings → Integrate calendar)
-//   NOTIFY_EMAIL    — email address to notify on each new booking (optional)
+//   CALENDAR_ID     — your Google Calendar ID
+//   NOTIFY_EMAIL    — email address(es) to notify on each request (comma-separated)
+//
+// Sheet columns (Reservations tab):
+//   A: ID  B: Property Name  C: Guest Name  D: Guest Email
+//   E: Check-in  F: Check-out  G: Guests  H: Total Price
+//   I: Created At  J: Status (pending/confirmed)  K: Message
 
 function getConfig() {
   var props = PropertiesService.getScriptProperties();
@@ -14,24 +17,22 @@ function getConfig() {
   };
 }
 
-// ─── GET: return availability data ────────────────────────────────────────────
+// ── GET: return availability data ─────────────────────────────────────────
 function doGet(e) {
   var config = getConfig();
   var sheet = SpreadsheetApp.openById(config.spreadsheetId)
     .getSheetByName('Reservations');
 
-  var rows = sheet.getDataRange().getValues();
+  var rows     = sheet.getDataRange().getValues();
   var bookings = [];
 
-  // Skip header row (row 0)
   for (var i = 1; i < rows.length; i++) {
     var row = rows[i];
-    if (!row[0]) continue; // skip empty rows
+    if (!row[0]) continue;
     bookings.push({
-      propertyId:   row[1],
-      propertyName: row[2],
-      checkIn:      row[5],  // ISO date string
-      checkOut:     row[6],
+      checkIn:  formatSheetDate(row[4]),
+      checkOut: formatSheetDate(row[5]),
+      status:   row[9] || 'confirmed',
     });
   }
 
@@ -40,158 +41,148 @@ function doGet(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// ─── POST: handle new reservation ─────────────────────────────────────────────
+// ── POST: handle new request or reservation ───────────────────────────────
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
-
-    if (data.action !== 'reserve') {
-      return jsonResponse({ success: false, error: 'Unknown action' });
-    }
-
     var config = getConfig();
-    var sheet = SpreadsheetApp.openById(config.spreadsheetId)
-      .getSheetByName('Reservations');
 
-    // Check availability before writing
-    if (!isAvailable(sheet, data.propertyId, data.checkIn, data.checkOut)) {
-      return jsonResponse({ success: false, error: 'Property not available for selected dates' });
+    if (data.action === 'request') {
+      return handleRequest(data, config);
+    }
+    if (data.action === 'reserve') {
+      return handleReservation(data, config);
     }
 
-    // Generate reservation ID
-    var lastRow = sheet.getLastRow();
-    var reservationId = 'RES' + String(lastRow).padStart(4, '0');
-
-    // Write to sheet
-    sheet.appendRow([
-      reservationId,           // A: ID
-      data.propertyId,         // B: Property ID
-      data.propertyName,       // C: Property Name
-      data.guestName,          // D: Guest Name
-      data.guestEmail,         // E: Guest Email
-      data.checkIn,            // F: Check-in
-      data.checkOut,           // G: Check-out
-      data.numGuests,          // H: Guests
-      data.totalPrice,         // I: Total Price
-      new Date().toISOString() // J: Created At
-    ]);
-
-    // Create Google Calendar event
-    createCalendarEvent(config.calendarId, data, reservationId);
-
-    // Send confirmation email to guest
-    sendGuestConfirmation(data, reservationId);
-
-    // Notify property owner (optional)
-    if (config.notifyEmail) {
-      sendOwnerNotification(config.notifyEmail, data, reservationId);
-    }
-
-    return jsonResponse({ success: true, reservationId: reservationId });
-
+    return jsonResponse({ success: false, error: 'Unknown action' });
   } catch (err) {
     return jsonResponse({ success: false, error: err.message });
   }
 }
 
-// ─── Availability check ───────────────────────────────────────────────────────
-function isAvailable(sheet, propertyId, checkIn, checkOut) {
-  var rows = sheet.getDataRange().getValues();
-  var newIn  = new Date(checkIn);
-  var newOut = new Date(checkOut);
+// ── Stay request (family / friends — pending until owner confirms) ─────────
+function handleRequest(data, config) {
+  var sheet = SpreadsheetApp.openById(config.spreadsheetId)
+    .getSheetByName('Reservations');
 
-  for (var i = 1; i < rows.length; i++) {
-    var row = rows[i];
-    if (!row[0]) continue;
-    if (String(row[1]) !== String(propertyId)) continue; // different property
+  var requestId = 'REQ' + String(sheet.getLastRow()).padStart(4, '0');
 
-    var existIn  = new Date(row[5]);
-    var existOut = new Date(row[6]);
+  sheet.appendRow([
+    requestId,
+    data.propertyName,
+    data.guestName,
+    data.guestEmail,
+    data.checkIn,
+    data.checkOut,
+    data.numGuests,
+    '',
+    new Date().toISOString(),
+    'pending',
+    data.message || '',
+  ]);
 
-    // Overlap check: new range overlaps if not (newOut <= existIn || newIn >= existOut)
-    if (!(newOut <= existIn || newIn >= existOut)) {
-      return false;
-    }
+  if (config.notifyEmail) {
+    sendOwnerNotification(config.notifyEmail, data, requestId);
   }
-  return true;
+
+  return jsonResponse({ success: true, requestId: requestId });
 }
 
-// ─── Google Calendar ──────────────────────────────────────────────────────────
+// ── Direct reservation (confirms immediately, creates calendar event) ──────
+function handleReservation(data, config) {
+  var sheet = SpreadsheetApp.openById(config.spreadsheetId)
+    .getSheetByName('Reservations');
+
+  var reservationId = 'RES' + String(sheet.getLastRow()).padStart(4, '0');
+
+  sheet.appendRow([
+    reservationId,
+    data.propertyName,
+    data.guestName,
+    data.guestEmail,
+    data.checkIn,
+    data.checkOut,
+    data.numGuests,
+    data.totalPrice || '',
+    new Date().toISOString(),
+    'confirmed',
+    data.message || '',
+  ]);
+
+  createCalendarEvent(config.calendarId, data, reservationId);
+  sendGuestConfirmation(data, reservationId);
+  if (config.notifyEmail) sendOwnerNotification(config.notifyEmail, data, reservationId);
+
+  return jsonResponse({ success: true, reservationId: reservationId });
+}
+
+// ── Google Calendar ────────────────────────────────────────────────────────
 function createCalendarEvent(calendarId, data, reservationId) {
   if (!calendarId) return;
-
   var calendar = CalendarApp.getCalendarById(calendarId);
-  if (!calendar) {
-    Logger.log('Calendar not found: ' + calendarId);
-    return;
-  }
+  if (!calendar) return;
 
-  var startDate = new Date(data.checkIn + 'T00:00:00');
-  var endDate   = new Date(data.checkOut + 'T00:00:00');
-  var title     = data.propertyName + ' — ' + data.guestName;
+  var startDate   = new Date(data.checkIn  + 'T00:00:00');
+  var endDate     = new Date(data.checkOut + 'T00:00:00');
+  var title       = data.propertyName + ' — ' + data.guestName;
   var description = [
-    'Reservation: ' + reservationId,
+    'ID: ' + reservationId,
     'Guest: ' + data.guestName + ' <' + data.guestEmail + '>',
     'Guests: ' + data.numGuests,
     'Check-in: ' + data.checkIn,
     'Check-out: ' + data.checkOut,
-    'Total: $' + Number(data.totalPrice).toFixed(2),
+    data.message ? '\nNote: ' + data.message : '',
   ].join('\n');
 
-  calendar.createAllDayEvent(title, startDate, endDate, {
-    description: description,
-  });
+  calendar.createAllDayEvent(title, startDate, endDate, { description: description });
 }
 
-// ─── Emails ───────────────────────────────────────────────────────────────────
+// ── Emails ────────────────────────────────────────────────────────────────
 function sendGuestConfirmation(data, reservationId) {
-  var nights = data.nights || daysBetween(data.checkIn, data.checkOut);
   var subject = 'Reservation Confirmed — ' + reservationId;
   var body = [
     'Hi ' + data.guestName + ',',
     '',
-    'Your reservation is confirmed!',
+    'Your reservation at ' + data.propertyName + ' is confirmed!',
     '',
-    'Confirmation #: ' + reservationId,
-    'Property: ' + data.propertyName,
-    'Check-in: ' + data.checkIn,
+    'Check-in:  ' + data.checkIn,
     'Check-out: ' + data.checkOut,
-    'Nights: ' + nights,
-    'Guests: ' + data.numGuests,
-    'Total: $' + Number(data.totalPrice).toFixed(2),
+    'Guests:    ' + data.numGuests,
     '',
     'We look forward to welcoming you!',
+    'Gisela & Tom',
   ].join('\n');
-
   MailApp.sendEmail(data.guestEmail, subject, body);
 }
 
-function sendOwnerNotification(ownerEmail, data, reservationId) {
-  var subject = 'New Reservation — ' + data.propertyName + ' (' + reservationId + ')';
+function sendOwnerNotification(ownerEmail, data, requestId) {
+  var isRequest = requestId.indexOf('REQ') === 0;
+  var subject = (isRequest ? 'New Stay Request' : 'New Reservation') +
+    ' — ' + data.propertyName + ' (' + requestId + ')';
   var body = [
-    'New booking received.',
+    isRequest ? 'New stay request received.' : 'New booking confirmed.',
     '',
-    'Reservation #: ' + reservationId,
-    'Property: ' + data.propertyName,
+    'ID: ' + requestId,
     'Guest: ' + data.guestName + ' (' + data.guestEmail + ')',
-    'Check-in: ' + data.checkIn,
+    'Check-in:  ' + data.checkIn,
     'Check-out: ' + data.checkOut,
-    'Guests: ' + data.numGuests,
-    'Total: $' + Number(data.totalPrice).toFixed(2),
+    'Guests:    ' + data.numGuests,
+    data.message ? '\nMessage: ' + data.message : '',
   ].join('\n');
-
   MailApp.sendEmail(ownerEmail, subject, body);
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────
+function formatSheetDate(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    return Utilities.formatDate(val, 'UTC', 'yyyy-MM-dd');
+  }
+  return String(val).split('T')[0];
+}
+
 function jsonResponse(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
-}
-
-function daysBetween(dateStr1, dateStr2) {
-  var d1 = new Date(dateStr1);
-  var d2 = new Date(dateStr2);
-  return Math.round((d2 - d1) / 86400000);
 }

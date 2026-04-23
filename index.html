@@ -3,148 +3,174 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HouseReserve</title>
+  <title>Longhitano Beach House</title>
   <link rel="stylesheet" href="static/css/style.css" />
 </head>
 <body>
 
   <header class="site-header">
-    <div class="container">
-      <a href="#" class="logo" onclick="showView('home')">HouseReserve</a>
-      <nav>
-        <a href="#" onclick="showView('home')">Browse Houses</a>
-      </nav>
-    </div>
+    <p class="site-name">Longhitano Beach House</p>
   </header>
 
-  <main class="container">
-    <div id="flash-container"></div>
-
-    <!-- Home: property grid -->
-    <div id="view-home">
-      <section class="hero">
-        <h1>Find Your Perfect Home Away From Home</h1>
-        <p>Browse our curated properties and book your next getaway.</p>
-        <a href="#" class="btn btn--primary" onclick="showView('home')">Browse All Houses</a>
-      </section>
-      <section class="featured">
-        <h2>Available Properties</h2>
-        <div id="property-grid" class="house-grid"></div>
-      </section>
-    </div>
-
-    <!-- Detail: property info + calendar + form -->
-    <div id="view-detail" hidden>
-      <div class="breadcrumb">
-        <a href="#" onclick="showView('home')">All Houses</a> &rsaquo; <span id="detail-breadcrumb"></span>
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="inner">
+      <div class="hero-location">
+        <span class="hr-line"></span>
+        <span>GRAND DUNES &middot; LONGS, SC</span>
+        <span class="hr-line"></span>
       </div>
-      <div class="detail-layout">
-        <div class="detail-main">
-          <h1 id="detail-name"></h1>
-          <p class="detail-location" id="detail-location"></p>
-          <div class="detail-meta">
-            <span id="detail-bedrooms"></span>
-            <span id="detail-bathrooms"></span>
-            <span id="detail-guests"></span>
-          </div>
-          <div class="detail-description">
-            <h2>About this property</h2>
-            <p id="detail-description"></p>
-          </div>
+      <h1>Your Family Retreat<br>at Myrtle Beach</h1>
+      <p class="hero-desc">A warm, welcoming place for family &amp; friends, just minutes from the shore.</p>
+      <a href="#availability" class="btn btn--coral">Check Availability</a>
+      <p class="hero-arrow">&#8595;</p>
+    </div>
+  </section>
 
-          <div class="availability-section">
-            <h2>Availability</h2>
-            <p class="availability-legend">
-              <span class="legend-dot legend-dot--available"></span> Available
-              <span class="legend-dot legend-dot--booked"></span> Booked
-              <span class="legend-dot legend-dot--selected"></span> Your selection
-            </p>
-            <div class="calendar-nav">
-              <button class="btn btn--outline btn--sm" onclick="changeMonth(-1)">&#8592; Prev</button>
-              <span id="calendar-title"></span>
-              <button class="btn btn--outline btn--sm" onclick="changeMonth(1)">Next &#8594;</button>
-            </div>
-            <div id="calendar" class="calendar"></div>
-          </div>
+  <!-- Home / About -->
+  <section class="home-section" id="home">
+    <div class="inner">
+      <p class="label">THE HOME</p>
+      <h2>Sun, Sand &amp; a Place<br>to Call Home</h2>
+      <p class="desc">Nestled in the Grand Dunes community on Brynlee Rd &mdash; short drive to Myrtle Beach.</p>
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-num">3</span>
+          <span class="stat-lbl">Bedrooms</span>
         </div>
+        <div class="stat">
+          <span class="stat-num">2</span>
+          <span class="stat-lbl">Bathrooms</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">&#8734;</span>
+          <span class="stat-lbl">Good Times</span>
+        </div>
+      </div>
+      <a href="#booking" class="btn btn--coral btn--sm">Request a Stay</a>
 
-        <div class="detail-sidebar">
-          <div class="booking-card">
-            <div class="booking-card__price">
-              $<span id="sidebar-price"></span><small>/night</small>
+      <hr class="divider" />
+
+      <p class="label">WHAT&rsquo;S INCLUDED</p>
+      <h2>Everything You Need</h2>
+      <div class="amenity-grid">
+        <div class="amenity-card">
+          <span class="amenity-icon">&#127965;</span>
+          <span>Beach Access</span>
+        </div>
+        <div class="amenity-card">
+          <span class="amenity-icon">&#127968;</span>
+          <span>3 Bedrooms</span>
+        </div>
+        <div class="amenity-card">
+          <span class="amenity-icon">&#127869;</span>
+          <span>Full Kitchen</span>
+        </div>
+        <div class="amenity-card">
+          <span class="amenity-icon">&#128246;</span>
+          <span>WiFi</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Availability Calendar -->
+  <section class="avail-section" id="availability">
+    <div class="inner">
+      <p class="label">AVAILABILITY</p>
+      <h2>When Can You Visit?</h2>
+      <p class="desc">Check open dates, then request your stay.</p>
+
+      <div id="sheets-banner" class="sheets-banner" hidden>
+        <span class="sheets-icon">&#9889;</span>
+        Connect Google Sheet for live dates &rarr;
+      </div>
+
+      <div class="cal-card">
+        <div class="cal-nav">
+          <button class="cal-btn" onclick="changeMonth(-1)">&#8592;</button>
+          <span id="cal-title" class="cal-title"></span>
+          <button class="cal-btn" onclick="changeMonth(1)">&#8594;</button>
+        </div>
+        <div id="calendar"></div>
+        <div class="cal-legend">
+          <span class="legend-item"><span class="leg-dot leg-available"></span>Available</span>
+          <span class="legend-item"><span class="leg-dot leg-booked"></span>Booked</span>
+          <span class="legend-item"><span class="leg-dot leg-pending"></span>Pending</span>
+        </div>
+        <p class="cal-note" id="cal-note">Showing sample data &mdash; connect Google Sheet to see live availability.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Booking Request -->
+  <section class="book-section" id="booking">
+    <div class="inner book-layout">
+      <div class="book-info">
+        <p class="label label--coral">BOOK A STAY</p>
+        <h2 class="title--light">Ready to Visit?</h2>
+        <p class="book-sub">Send Gisela &amp; Tom a message with your dates &mdash; they&rsquo;ll get back soon.</p>
+        <ul class="book-list">
+          <li>Family &amp; friends only</li>
+          <li>Check availability first</li>
+          <li>You&rsquo;ll hear back in 1&ndash;2 days</li>
+          <li>Flexible check-in / check-out</li>
+        </ul>
+      </div>
+      <div class="book-form-wrap">
+        <div class="book-form-card">
+          <h3>Request a Stay</h3>
+          <p class="form-sub">Fill in the details below and we&rsquo;ll confirm.</p>
+          <div id="form-flash"></div>
+          <form id="request-form" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="first_name">FIRST NAME</label>
+                <input type="text" id="first_name" placeholder="Jane" required />
+              </div>
+              <div class="form-group">
+                <label for="last_name">LAST NAME</label>
+                <input type="text" id="last_name" placeholder="Smith" required />
+              </div>
             </div>
-            <form id="booking-form" novalidate>
+            <div class="form-group">
+              <label for="guest_email">EMAIL</label>
+              <input type="email" id="guest_email" placeholder="jane@example.com" required />
+            </div>
+            <div class="form-row">
               <div class="form-group">
-                <label for="guest_name">Full Name</label>
-                <input type="text" id="guest_name" placeholder="Jane Smith" required />
-              </div>
-              <div class="form-group">
-                <label for="guest_email">Email</label>
-                <input type="email" id="guest_email" placeholder="jane@example.com" required />
-              </div>
-              <div class="form-group">
-                <label for="check_in">Check-in</label>
+                <label for="check_in">CHECK-IN DATE</label>
                 <input type="date" id="check_in" required />
               </div>
               <div class="form-group">
-                <label for="check_out">Check-out</label>
+                <label for="check_out">CHECK-OUT DATE</label>
                 <input type="date" id="check_out" required />
               </div>
-              <div class="form-group">
-                <label for="num_guests">Guests</label>
-                <select id="num_guests"></select>
-              </div>
-              <div class="booking-card__total" id="price-preview" hidden>
-                <span id="price-breakdown"></span>
-              </div>
-              <button type="submit" class="btn btn--primary btn--block">Confirm Reservation</button>
-            </form>
-          </div>
+            </div>
+            <div class="form-group">
+              <label for="num_guests">NUMBER OF GUESTS</label>
+              <input type="number" id="num_guests" min="1" max="10" placeholder="4" required />
+            </div>
+            <div class="form-group">
+              <label for="message">MESSAGE</label>
+              <textarea id="message" rows="4" placeholder="Tell us about your visit..."></textarea>
+            </div>
+            <button type="submit" class="btn btn--coral btn--block">Send Request &rarr;</button>
+          </form>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- Confirmation view -->
-    <div id="view-confirm" hidden>
-      <div class="confirmation-card">
-        <div class="confirmation-card__header">
-          <h1>Reservation Confirmed!</h1>
-          <span class="confirmation-badge" id="confirm-id"></span>
-        </div>
-        <div class="confirmation-grid">
-          <div>
-            <h3>Property</h3>
-            <p id="confirm-property"></p>
-          </div>
-          <div>
-            <h3>Guest</h3>
-            <p id="confirm-guest"></p>
-            <p id="confirm-email"></p>
-          </div>
-          <div>
-            <h3>Dates</h3>
-            <p id="confirm-dates"></p>
-            <p id="confirm-nights"></p>
-          </div>
-          <div>
-            <h3>Total</h3>
-            <p id="confirm-total"></p>
-            <p id="confirm-guests-count"></p>
-          </div>
-        </div>
-        <p class="confirmation-note">A confirmation has been added to the calendar and a copy sent to your email.</p>
-        <div class="confirmation-actions">
-          <a href="#" class="btn btn--primary" onclick="showView('home')">Browse More Houses</a>
-        </div>
-      </div>
+  <!-- Confirmation overlay -->
+  <div id="confirm-overlay" class="confirm-overlay" hidden>
+    <div class="confirm-box">
+      <div class="confirm-check">&#10003;</div>
+      <h2>Request Sent!</h2>
+      <p>Thanks! Gisela &amp; Tom will get back to you within 1&ndash;2 days.</p>
+      <button class="btn btn--coral" onclick="closeConfirm()">Done</button>
     </div>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container">
-      <p>&copy; 2026 HouseReserve. All rights reserved.</p>
-    </div>
-  </footer>
+  </div>
 
   <script src="static/js/app.js"></script>
 </body>
