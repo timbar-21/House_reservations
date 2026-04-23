@@ -237,10 +237,20 @@ function handleDayClick(dateStr) {
       pickerEnd = clicked;
       document.getElementById('check_out').value = dateStr;
       if (hint) hint.textContent = 'Dates selected — scroll down to complete your request.';
+      updateNightsCount(pickerStart, pickerEnd);
       smoothScrollTo('booking');
     }
   }
   renderCalendar();
+}
+
+function updateNightsCount(start, end) {
+  const el = document.getElementById('nights-count');
+  if (!el) return;
+  if (!start || !end) { el.hidden = true; return; }
+  const nights = Math.round((end - start) / (1000 * 60 * 60 * 24));
+  el.textContent = nights + (nights === 1 ? ' night selected' : ' nights selected');
+  el.hidden = false;
 }
 
 function changeMonth(delta) {
@@ -355,6 +365,7 @@ async function handleRequestSubmit(e) {
   e.target.reset();
   pickerStart = null;
   pickerEnd   = null;
+  updateNightsCount(null, null);
   renderCalendar();
   const hint = document.getElementById('cal-hint');
   if (hint) hint.textContent = 'Click an available date to start selecting your stay.';

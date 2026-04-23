@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Beach House at Grand Dunes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="static/css/style.css" />
 </head>
 <body>
@@ -79,19 +82,23 @@
       <div class="amenity-grid">
         <div class="amenity-card">
           <span class="amenity-icon">&#127965;</span>
-          <span>Beach Access</span>
+          <span class="amenity-name">Beach Access</span>
+          <span class="amenity-desc">Private Grand Dunes Ocean Club</span>
         </div>
         <div class="amenity-card">
           <span class="amenity-icon">&#127968;</span>
-          <span>3 Bedrooms</span>
+          <span class="amenity-name">3 Bedrooms</span>
+          <span class="amenity-desc">Sleeps up to 10 guests</span>
         </div>
         <div class="amenity-card">
           <span class="amenity-icon">&#127869;</span>
-          <span>Full Kitchen</span>
+          <span class="amenity-name">Full Kitchen</span>
+          <span class="amenity-desc">Fully stocked for your stay</span>
         </div>
         <div class="amenity-card">
           <span class="amenity-icon">&#128246;</span>
-          <span>WiFi</span>
+          <span class="amenity-name">WiFi</span>
+          <span class="amenity-desc">High-speed throughout</span>
         </div>
       </div>
     </div>
@@ -179,6 +186,7 @@
               <label for="message">MESSAGE</label>
               <textarea id="message" rows="4" placeholder="Tell us about your visit..."></textarea>
             </div>
+            <p class="nights-count" id="nights-count" hidden></p>
             <button type="submit" class="btn btn--coral btn--block">Send Request &rarr;</button>
           </form>
         </div>
