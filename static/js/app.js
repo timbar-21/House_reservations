@@ -127,12 +127,12 @@ async function handleRequestSubmit(e) {
   const guests    = document.getElementById('num_guests').value;
   const message   = document.getElementById('message').value.trim();
 
-  if (!firstName)                    return showFlash('First name is required.');
-  if (!lastName)                     return showFlash('Last name is required.');
-  if (!email || !email.includes('@')) return showFlash('A valid email is required.');
-  if (!checkIn)                      return showFlash('Please select a check-in date.');
-  if (!checkOut)                     return showFlash('Please select a check-out date.');
-  if (checkOut <= checkIn)           return showFlash('Check-out must be after check-in.');
+  if (!firstName)                      return showFlash('First name is required.');
+  if (!lastName)                       return showFlash('Last name is required.');
+  if (!email || !email.includes('@'))  return showFlash('A valid email is required.');
+  if (!checkIn)                        return showFlash('Please select a check-in date.');
+  if (!checkOut)                       return showFlash('Please select a check-out date.');
+  if (checkOut <= checkIn)             return showFlash('Check-out must be after check-in.');
   if (!guests || parseInt(guests) < 1) return showFlash('Please enter the number of guests.');
 
   const payload = {
@@ -169,6 +169,20 @@ async function handleRequestSubmit(e) {
 
 function closeConfirm() {
   document.getElementById('confirm-overlay').hidden = true;
+}
+
+function openLightbox(img) {
+  const lb    = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lightbox-img');
+  lbImg.src   = img.src;
+  lbImg.alt   = img.alt;
+  lb.hidden   = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').hidden = true;
+  document.body.style.overflow = '';
 }
 
 function showFlash(msg) {
