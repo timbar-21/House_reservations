@@ -79,19 +79,28 @@ function loadSampleData() {
 }
 
 // JSONP helper — avoids CORS on Google Apps Script GET endpoints
-function fetchJsonp(url) {
+function fetchJsonp(url, timeoutMs = 10000) {
   return new Promise((resolve, reject) => {
     const cb = '_cb' + Math.random().toString(36).slice(2);
     const script = document.createElement('script');
+
+    const timer = setTimeout(() => {
+      delete window[cb];
+      script.remove();
+      reject(new Error('JSONP timeout — Apps Script may not be redeployed yet'));
+    }, timeoutMs);
+
     window[cb] = data => {
+      clearTimeout(timer);
       delete window[cb];
       script.remove();
       resolve(data);
     };
     script.onerror = () => {
+      clearTimeout(timer);
       delete window[cb];
       script.remove();
-      reject(new Error('JSONP request failed'));
+      reject(new Error('JSONP request failed — check Apps Script deployment'));
     };
     script.src = `${url}&callback=${cb}`;
     document.head.appendChild(script);
@@ -103,6 +112,10 @@ async function fetchAvailability() {
     document.getElementById('sheets-banner').hidden = false;
     return;
   }
+
+  const note = document.getElementById('cal-note');
+  note.textContent = 'Loading availability…';
+
   try {
     const data = await fetchJsonp(`${CONFIG.appsScriptUrl}?action=availability`);
     if (data.bookings) {
@@ -111,11 +124,14 @@ async function fetchAvailability() {
         checkOut: new Date(b.checkOut + 'T00:00:00'),
         status:   b.status || 'confirmed',
       }));
-      document.getElementById('cal-note').textContent = 'Live availability from Google Sheet.';
+      note.textContent = 'Live availability from Google Sheet.';
       renderCalendar();
+    } else {
+      note.textContent = 'Sheet connected but no bookings found.';
     }
   } catch (e) {
-    console.warn('Could not fetch availability:', e);
+    console.warn('Could not fetch availability:', e.message);
+    note.textContent = 'Could not load live data — showing sample dates. (' + e.message + ')';
   }
 }
 
