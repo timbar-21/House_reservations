@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beach House at Grand Dunes</title>
+  <link rel="stylesheet" href="static/css/style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <p class="site-name">Beach House at Grand Dunes</p>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero" id="top" style="background-image: url('static/images/exterior.jpg')">
+    <div class="hero-overlay"></div>
+    <div class="inner hero-inner">
+      <div class="hero-location">
+        <span class="hr-line"></span>
+        <span>GRAND DUNES &middot; LONGS, SC</span>
+        <span class="hr-line"></span>
+      </div>
+      <h1>Your Family Retreat<br>at Myrtle Beach</h1>
+      <p class="hero-desc">A warm, welcoming place for family &amp; friends, just minutes from the shore.</p>
+      <a href="#availability" class="btn btn--coral">Check Availability</a>
+      <p class="hero-arrow">&#8595;</p>
+    </div>
+  </section>
+
+  <!-- Home / About -->
+  <section class="home-section" id="home">
+    <div class="inner">
+      <p class="label">THE HOME</p>
+      <h2>Sun, Sand &amp; a Place<br>to Call Home</h2>
+      <p class="desc">Nestled in the Grand Dunes community &mdash; short drive to Myrtle Beach.</p>
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-num">3</span>
+          <span class="stat-lbl">Bedrooms</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">2</span>
+          <span class="stat-lbl">Bathrooms</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">&#8734;</span>
+          <span class="stat-lbl">Good Times</span>
+        </div>
+      </div>
+      <a href="#booking" class="btn btn--coral btn--sm">Request a Stay</a>
+
+      <!-- Photo gallery -->
+      <div class="photo-strip">
+        <img src="static/images/interior.jpg" alt="Living room interior" onclick="openLightbox(this)" />
+        <img src="static/images/beach.jpg" alt="Grand Dunes Ocean Club beach access" onclick="openLightbox(this)" />
+        <img src="static/images/pool.jpeg" alt="Community pool and amenity center" onclick="openLightbox(this)" />
+        <img src="static/images/entrance.jpeg" alt="Grand Dunes North Village entrance" onclick="openLightbox(this)" />
+      </div>
+
+      <hr class="divider" />
+
+      <p class="label">WHAT&rsquo;S INCLUDED</p>
+      <h2>Everything You Need</h2>
+      <div class="amenity-grid">
+        <div class="amenity-card">
+          <span class="amenity-icon">&#127965;</span>
+          <span>Beach Access</span>
+        </div>
+        <div class="amenity-card">
+          <span class="amenity-icon">&#127968;</span>
+          <span>3 Bedrooms</span>
+        </div>
+        <div class="amenity-card">
+          <span class="amenity-icon">&#127869;</span>
+          <span>Full Kitchen</span>
+        </div>
+        <div class="amenity-card">
+          <span class="amenity-icon">&#128246;</span>
+          <span>WiFi</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Availability Calendar -->
+  <section class="avail-section" id="availability">
+    <div class="inner">
+      <p class="label">AVAILABILITY</p>
+      <h2>When Can You Visit?</h2>
+      <p class="desc">Check open dates, then request your stay.</p>
+
+      <div id="sheets-banner" class="sheets-banner" hidden>
+        <span class="sheets-icon">&#9889;</span>
+        Connect Google Sheet for live dates &rarr;
+      </div>
+
+      <div class="cal-card">
+        <div class="cal-nav">
+          <button class="cal-btn" onclick="changeMonth(-1)">&#8592;</button>
+          <span id="cal-title" class="cal-title"></span>
+          <button class="cal-btn" onclick="changeMonth(1)">&#8594;</button>
+        </div>
+        <div id="calendar"></div>
+        <div class="cal-legend">
+          <span class="legend-item"><span class="leg-dot leg-available"></span>Available</span>
+          <span class="legend-item"><span class="leg-dot leg-booked"></span>Booked</span>
+          <span class="legend-item"><span class="leg-dot leg-pending"></span>Pending</span>
+        </div>
+        <p class="cal-note" id="cal-note">Showing sample data &mdash; connect Google Sheet to see live availability.</p>
+        <p class="cal-hint" id="cal-hint">Click an available date to start selecting your stay.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Booking Request -->
+  <section class="book-section" id="booking">
+    <div class="inner book-layout">
+      <div class="book-info">
+        <p class="label label--coral">BOOK A STAY</p>
+        <h2 class="title--light">Ready to Visit?</h2>
+        <p class="book-sub">Send Gisela &amp; Tom a message with your dates &mdash; they&rsquo;ll get back soon.</p>
+        <ul class="book-list">
+          <li>Family &amp; friends only</li>
+          <li>Check availability first</li>
+          <li>You&rsquo;ll hear back in 1&ndash;2 days</li>
+          <li>Flexible check-in / check-out</li>
+        </ul>
+      </div>
+      <div class="book-form-wrap">
+        <div class="book-form-card">
+          <h3>Request a Stay</h3>
+          <p class="form-sub">Fill in the details below and we&rsquo;ll confirm.</p>
+          <div id="form-flash"></div>
+          <form id="request-form" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="first_name">FIRST NAME</label>
+                <input type="text" id="first_name" placeholder="Jane" required />
+              </div>
+              <div class="form-group">
+                <label for="last_name">LAST NAME</label>
+                <input type="text" id="last_name" placeholder="Smith" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="guest_email">EMAIL</label>
+              <input type="email" id="guest_email" placeholder="jane@example.com" required />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="check_in">CHECK-IN DATE</label>
+                <input type="date" id="check_in" required />
+              </div>
+              <div class="form-group">
+                <label for="check_out">CHECK-OUT DATE</label>
+                <input type="date" id="check_out" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="num_guests">NUMBER OF GUESTS</label>
+              <input type="number" id="num_guests" min="1" max="10" placeholder="4" required />
+            </div>
+            <div class="form-group">
+              <label for="message">MESSAGE</label>
+              <textarea id="message" rows="4" placeholder="Tell us about your visit..."></textarea>
+            </div>
+            <button type="submit" class="btn btn--coral btn--block">Send Request &rarr;</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" hidden onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()" />
+  </div>
+
+  <!-- Confirmation overlay -->
+  <div id="confirm-overlay" class="confirm-overlay" hidden>
+    <div class="confirm-box">
+      <div class="confirm-check">&#10003;</div>
+      <h2>Request Sent!</h2>
+      <p>Thanks! Gisela &amp; Tom will get back to you within 1&ndash;2 days.</p>
+      <button class="btn btn--coral" onclick="closeConfirm()">Done</button>
+    </div>
+  </div>
+
+  <script src="static/js/app.js"></script>
+</body>
+</html>
