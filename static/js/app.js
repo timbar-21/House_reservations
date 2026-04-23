@@ -59,7 +59,7 @@ async function fetchAvailability() {
     }
   } catch (e) {
     console.warn('Could not fetch availability:', e);
-    document.getElementById('sheets-banner').hidden = false;
+    // Only show the banner if the sheet hasn't been configured
   }
 }
 
