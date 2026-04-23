@@ -130,8 +130,15 @@ async function fetchAvailability() {
       note.textContent = 'Sheet connected but no bookings found.';
     }
   } catch (e) {
-    console.warn('Could not fetch availability:', e.message);
-    note.textContent = 'Could not load live data — showing sample dates. (' + e.message + ')';
+    console.warn('Availability fetch failed:', e.message);
+    console.info(
+      'Diagnostic — open this URL in a browser tab.\n' +
+      'You should see:  test({"bookings":[...]})\n' +
+      'Plain JSON means the Apps Script needs to be redeployed with JSONP support.\n' +
+      'An HTML error page means SPREADSHEET_ID is not set in Script Properties.\n' +
+      CONFIG.appsScriptUrl + '?action=availability&callback=test'
+    );
+    note.textContent = 'Could not load live data — showing sample dates.';
   }
 }
 
