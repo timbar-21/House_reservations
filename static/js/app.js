@@ -19,6 +19,10 @@ let pickerStart  = null;
 let pickerEnd    = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+  initGate();
+  initScrollReveal();
+  initScrollTop();
+
   calendarDate.setDate(1);
   loadSampleData();
   renderCalendar();
@@ -43,6 +47,60 @@ document.addEventListener('DOMContentLoaded', () => {
     smoothScrollTo(id);
   });
 });
+
+// ── Password gate ─────────────────────────────────────────────────────────────
+const GATE_KEY  = 'hb_auth';
+const GATE_PASS = 'longhitano';
+
+function initGate() {
+  if (localStorage.getItem(GATE_KEY) === '1') {
+    document.getElementById('gate').remove();
+    return;
+  }
+  document.body.style.overflow = 'hidden';
+  const input = document.getElementById('gate-input');
+  const btn   = document.getElementById('gate-btn');
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') submitGate(); });
+  btn.addEventListener('click', submitGate);
+  input.focus();
+}
+
+function submitGate() {
+  const input = document.getElementById('gate-input');
+  const error = document.getElementById('gate-error');
+  if (input.value === GATE_PASS) {
+    localStorage.setItem(GATE_KEY, '1');
+    const gate = document.getElementById('gate');
+    gate.style.opacity = '0';
+    document.body.style.overflow = '';
+    setTimeout(() => gate.remove(), 400);
+  } else {
+    error.hidden = false;
+    input.value = '';
+    input.focus();
+  }
+}
+
+// ── Scroll reveal ─────────────────────────────────────────────────────────────
+function initScrollReveal() {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+// ── Scroll-to-top button ──────────────────────────────────────────────────────
+function initScrollTop() {
+  const btn = document.getElementById('scroll-top');
+  window.addEventListener('scroll', () => {
+    btn.hidden = window.scrollY < 400;
+  }, { passive: true });
+}
 
 // ── Smooth scroll ─────────────────────────────────────────────────────────────
 function smoothScrollTo(id) {

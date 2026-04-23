@@ -8,6 +8,20 @@
 </head>
 <body>
 
+  <!-- Password gate -->
+  <div id="gate" class="gate">
+    <div class="gate-box">
+      <p class="gate-label">BEACH HOUSE AT GRAND DUNES</p>
+      <h1 class="gate-title">Welcome</h1>
+      <p class="gate-sub">Enter the password to continue.</p>
+      <div class="gate-field">
+        <input type="password" id="gate-input" placeholder="Password" autocomplete="current-password" />
+        <button class="btn btn--coral" id="gate-btn">Enter &rarr;</button>
+      </div>
+      <p id="gate-error" class="gate-error" hidden>Incorrect password &mdash; try again.</p>
+    </div>
+  </div>
+
   <header class="site-header">
     <p class="site-name">Beach House at Grand Dunes</p>
   </header>
@@ -30,7 +44,7 @@
 
   <!-- Home / About -->
   <section class="home-section" id="home">
-    <div class="inner">
+    <div class="inner reveal">
       <p class="label">THE HOME</p>
       <h2>Sun, Sand &amp; a Place<br>to Call Home</h2>
       <p class="desc">Nestled in the Grand Dunes community &mdash; short drive to Myrtle Beach.</p>
@@ -85,7 +99,7 @@
 
   <!-- Availability Calendar -->
   <section class="avail-section" id="availability">
-    <div class="inner">
+    <div class="inner reveal">
       <p class="label">AVAILABILITY</p>
       <h2>When Can You Visit?</h2>
       <p class="desc">Check open dates, then request your stay.</p>
@@ -115,7 +129,7 @@
 
   <!-- Booking Request -->
   <section class="book-section" id="booking">
-    <div class="inner book-layout">
+    <div class="inner book-layout reveal">
       <div class="book-info">
         <p class="label label--coral">BOOK A STAY</p>
         <h2 class="title--light">Ready to Visit?</h2>
@@ -171,6 +185,18 @@
       </div>
     </div>
   </section>
+
+  <!-- Footer -->
+  <footer class="page-footer">
+    <div class="inner">
+      <p class="footer-name">Beach House at Grand Dunes</p>
+      <p class="footer-sub">Grand Dunes &middot; Longs, SC &middot; Family &amp; friends only</p>
+      <button class="footer-top-link" onclick="smoothScrollTo('top')">Back to top &uarr;</button>
+    </div>
+  </footer>
+
+  <!-- Scroll-to-top -->
+  <button id="scroll-top" class="scroll-top" hidden onclick="smoothScrollTo('top')" aria-label="Back to top">&#8593;</button>
 
   <!-- Lightbox -->
   <div id="lightbox" class="lightbox" hidden onclick="closeLightbox()">
