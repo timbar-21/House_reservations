@@ -171,6 +171,20 @@ function closeConfirm() {
   document.getElementById('confirm-overlay').hidden = true;
 }
 
+function openLightbox(img) {
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lightbox-img');
+  lbImg.src = img.src;
+  lbImg.alt = img.alt;
+  lb.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').hidden = true;
+  document.body.style.overflow = '';
+}
+
 function showFlash(msg) {
   document.getElementById('form-flash').innerHTML =
     `<div class="flash flash--error">${msg}</div>`;

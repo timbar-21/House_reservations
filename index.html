@@ -52,10 +52,10 @@
 
       <!-- Photo gallery -->
       <div class="photo-strip">
-        <img src="static/images/interior.jpg" alt="Living room interior" />
-        <img src="static/images/beach.jpg" alt="Grand Dunes Ocean Club beach access" />
-        <img src="static/images/pool.jpeg" alt="Community pool and amenity center" />
-        <img src="static/images/entrance.jpeg" alt="Grand Dunes North Village entrance" />
+        <img src="static/images/interior.jpg" alt="Living room interior" onclick="openLightbox(this)" />
+        <img src="static/images/beach.jpg" alt="Grand Dunes Ocean Club beach access" onclick="openLightbox(this)" />
+        <img src="static/images/pool.jpeg" alt="Community pool and amenity center" onclick="openLightbox(this)" />
+        <img src="static/images/entrance.jpeg" alt="Grand Dunes North Village entrance" onclick="openLightbox(this)" />
       </div>
 
       <hr class="divider" />
@@ -170,6 +170,12 @@
       </div>
     </div>
   </section>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" hidden onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()" />
+  </div>
 
   <!-- Confirmation overlay -->
   <div id="confirm-overlay" class="confirm-overlay" hidden>
