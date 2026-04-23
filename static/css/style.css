@@ -346,6 +346,38 @@ a { text-decoration: none; }
 }
 .cal-day--past { color: #D1D5DB; }
 
+/* Interactive selection */
+[data-date] { cursor: pointer; }
+[data-date]:hover { opacity: 0.75; }
+.cal-day--sel-start,
+.cal-day--sel-end {
+  background: var(--teal) !important;
+  color: var(--white) !important;
+  border-color: var(--teal) !important;
+}
+.cal-day--sel-hover-end {
+  background: rgba(28, 80, 102, 0.55) !important;
+  color: var(--white) !important;
+  border-color: var(--teal) !important;
+}
+.cal-day--sel-range {
+  background: rgba(28, 80, 102, 0.12);
+  border-color: rgba(28, 80, 102, 0.25) !important;
+  border-radius: 0;
+  color: var(--teal) !important;
+}
+
+/* Calendar hint */
+.cal-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.6rem;
+  text-align: center;
+  min-height: 1.1em;
+}
+.cal-hint--active { color: var(--coral); font-weight: 600; }
+.cal-hint--done   { color: #16A34A; font-weight: 600; }
+
 /* Legend */
 .cal-legend {
   display: flex;

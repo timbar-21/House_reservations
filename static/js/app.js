@@ -15,6 +15,9 @@ const SAMPLE_BOOKINGS = [
 
 let bookedRanges = [];
 let calendarDate = new Date();
+let selectedCheckIn  = null;
+let selectedCheckOut = null;
+let hoverDate = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   calendarDate.setDate(1);
@@ -30,6 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
   checkIn.min  = today;
   checkOut.min = today;
   checkIn.addEventListener('change', () => { checkOut.min = checkIn.value; });
+
+  const calEl = document.getElementById('calendar');
+  calEl.addEventListener('click', handleCalendarClick);
+  calEl.addEventListener('mouseover', handleCalendarHover);
+  calEl.addEventListener('mouseleave', () => {
+    if (hoverDate) {
+      hoverDate = null;
+      if (selectedCheckIn && !selectedCheckOut) renderCalendar();
+    }
+  });
 });
 
 function loadSampleData() {
@@ -59,7 +72,6 @@ async function fetchAvailability() {
     }
   } catch (e) {
     console.warn('Could not fetch availability:', e);
-    // Only show the banner if the sheet hasn't been configured
   }
 }
 
@@ -72,8 +84,13 @@ function getDateStatus(date) {
   return 'available';
 }
 
+function toDateStr(year, month, day) {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
 function changeMonth(delta) {
   calendarDate.setMonth(calendarDate.getMonth() + delta);
+  hoverDate = null;
   renderCalendar();
 }
 
@@ -89,6 +106,10 @@ function renderCalendar() {
   const firstDay    = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+  const startT = selectedCheckIn  ? selectedCheckIn.getTime()  : null;
+  const endT   = selectedCheckOut ? selectedCheckOut.getTime() : null;
+  const hoverT = hoverDate        ? hoverDate.getTime()        : null;
+
   let html = '<div class="cal-grid">';
   ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].forEach(d => {
     html += `<div class="cal-day-name">${d}</div>`;
@@ -99,20 +120,104 @@ function renderCalendar() {
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(year, month, d);
     const isPast = date < today;
+    const t = date.getTime();
     let cls = 'cal-day';
+    let dataDate = '';
+
     if (isPast) {
       cls += ' cal-day--past';
     } else {
       const status = getDateStatus(date);
-      if (status === 'booked')  cls += ' cal-day--booked';
-      else if (status === 'pending') cls += ' cal-day--pending';
-      else cls += ' cal-day--available';
+      if (status === 'booked') {
+        cls += ' cal-day--booked';
+      } else {
+        if (status === 'pending') cls += ' cal-day--pending';
+        else cls += ' cal-day--available';
+
+        // Selection highlighting
+        if (startT && t === startT) {
+          cls += ' cal-day--sel-start';
+        } else if (endT && t === endT) {
+          cls += ' cal-day--sel-end';
+        } else if (startT && endT && t > startT && t < endT) {
+          cls += ' cal-day--sel-range';
+        } else if (startT && !endT && hoverT && hoverT > startT) {
+          if (t === hoverT) cls += ' cal-day--sel-hover-end';
+          else if (t > startT && t < hoverT) cls += ' cal-day--sel-range';
+        }
+
+        dataDate = ` data-date="${toDateStr(year, month, d)}"`;
+      }
     }
-    html += `<div class="${cls}">${d}</div>`;
+
+    html += `<div class="${cls}"${dataDate}>${d}</div>`;
   }
 
   html += '</div>';
   cal.innerHTML = html;
+  updateCalHint();
+}
+
+function updateCalHint() {
+  const hint = document.getElementById('cal-hint');
+  if (!hint) return;
+  if (!selectedCheckIn) {
+    hint.textContent = 'Click an available date to start selecting.';
+    hint.className = 'cal-hint';
+  } else if (!selectedCheckOut) {
+    hint.textContent = 'Now click your check-out date.';
+    hint.className = 'cal-hint cal-hint--active';
+  } else {
+    const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    hint.textContent = `${fmt(selectedCheckIn)} → ${fmt(selectedCheckOut)} — form filled below`;
+    hint.className = 'cal-hint cal-hint--done';
+  }
+}
+
+function handleCalendarClick(e) {
+  const dayEl = e.target.closest('[data-date]');
+  if (!dayEl) return;
+  const date = new Date(dayEl.dataset.date + 'T00:00:00');
+
+  if (!selectedCheckIn || selectedCheckOut) {
+    selectedCheckIn  = date;
+    selectedCheckOut = null;
+    hoverDate = null;
+  } else {
+    if (date <= selectedCheckIn) {
+      selectedCheckIn = date;
+      selectedCheckOut = null;
+    } else {
+      selectedCheckOut = date;
+      hoverDate = null;
+      fillFormDates();
+    }
+  }
+  renderCalendar();
+}
+
+function handleCalendarHover(e) {
+  if (!selectedCheckIn || selectedCheckOut) return;
+  const dayEl = e.target.closest('[data-date]');
+  if (!dayEl) return;
+  const date = new Date(dayEl.dataset.date + 'T00:00:00');
+  if (!hoverDate || hoverDate.getTime() !== date.getTime()) {
+    hoverDate = date;
+    renderCalendar();
+  }
+}
+
+function fillFormDates() {
+  if (!selectedCheckIn || !selectedCheckOut) return;
+  const fmt = d => d.toISOString().split('T')[0];
+  const checkInEl  = document.getElementById('check_in');
+  const checkOutEl = document.getElementById('check_out');
+  checkInEl.value  = fmt(selectedCheckIn);
+  checkOutEl.min   = fmt(selectedCheckIn);
+  checkOutEl.value = fmt(selectedCheckOut);
+  setTimeout(() => {
+    document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
+  }, 350);
 }
 
 async function handleRequestSubmit(e) {
@@ -164,6 +269,9 @@ async function handleRequestSubmit(e) {
   btn.disabled    = false;
   btn.textContent = 'Send Request →';
   e.target.reset();
+  selectedCheckIn  = null;
+  selectedCheckOut = null;
+  renderCalendar();
   document.getElementById('confirm-overlay').hidden = false;
 }
 
