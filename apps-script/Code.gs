@@ -30,9 +30,12 @@ function doGet(e) {
   for (var i = 1; i < rows.length; i++) {
     var row = rows[i];
     if (!row[0]) continue;
+    var checkIn  = formatSheetDate(row[4]);
+    var checkOut = formatSheetDate(row[5]);
+    if (!checkIn || !checkOut) continue;
     bookings.push({
-      checkIn:  formatSheetDate(row[4]),
-      checkOut: formatSheetDate(row[5]),
+      checkIn:  checkIn,
+      checkOut: checkOut,
       status:   row[9] || 'confirmed',
     });
   }
@@ -186,9 +189,18 @@ function sendOwnerNotification(ownerEmail, data, requestId) {
 function formatSheetDate(val) {
   if (!val) return '';
   if (val instanceof Date) {
-    return Utilities.formatDate(val, 'UTC', 'yyyy-MM-dd');
+    return Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd');
   }
-  return String(val).split('T')[0];
+  var str = String(val).trim();
+  if (!str) return '';
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+  // Parse any other date string (e.g. "Sat May 16 2026 00:00:00 GMT...")
+  var parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) {
+    return Utilities.formatDate(parsed, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  return '';
 }
 
 function jsonResponse(obj) {
