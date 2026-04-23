@@ -1,7 +1,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Prevent any element from causing horizontal page scroll on mobile */
-html { overflow-x: clip; }
+/* Prevent horizontal page scroll — clip not supported on iOS Safari < 16 */
+html { overflow-x: hidden; }
 
 :root {
   --teal: #1C5066;
@@ -98,6 +98,7 @@ a { text-decoration: none; }
 .hero-inner {
   position: relative;
   z-index: 1;
+  width: 100%;
 }
 .hero-location {
   display: flex;
