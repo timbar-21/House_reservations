@@ -18,6 +18,7 @@ function getConfig() {
 }
 
 // ── GET: return availability data ─────────────────────────────────────────
+// Supports JSONP via ?callback=fnName to work around CORS on GitHub Pages.
 function doGet(e) {
   var config = getConfig();
   var sheet = SpreadsheetApp.openById(config.spreadsheetId)
@@ -36,8 +37,17 @@ function doGet(e) {
     });
   }
 
+  var json     = JSON.stringify({ bookings: bookings });
+  var callback = e.parameter.callback;
+
+  if (callback) {
+    return ContentService
+      .createTextOutput(callback + '(' + json + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
   return ContentService
-    .createTextOutput(JSON.stringify({ bookings: bookings }))
+    .createTextOutput(json)
     .setMimeType(ContentService.MimeType.JSON);
 }
 

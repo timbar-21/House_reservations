@@ -32,8 +32,44 @@ document.addEventListener('DOMContentLoaded', () => {
   checkIn.min  = today;
   checkOut.min = today;
   checkIn.addEventListener('change', () => { checkOut.min = checkIn.value; });
+
+  // Smooth-scroll all in-page anchor links
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = a.getAttribute('href').slice(1);
+    if (!id) return;
+    e.preventDefault();
+    smoothScrollTo(id);
+  });
 });
 
+// ── Smooth scroll ─────────────────────────────────────────────────────────────
+function smoothScrollTo(id) {
+  const target = document.getElementById(id);
+  if (!target) return;
+
+  const start    = window.scrollY;
+  const end      = target.getBoundingClientRect().top + window.scrollY;
+  const distance = end - start;
+  const duration = Math.min(900, Math.max(420, Math.abs(distance) * 0.45));
+  let startTime  = null;
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    const progress = Math.min((ts - startTime) / duration, 1);
+    window.scrollTo(0, start + distance * easeInOutCubic(progress));
+    if (progress < 1) requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+}
+
+// ── Data loading ──────────────────────────────────────────────────────────────
 function loadSampleData() {
   bookedRanges = SAMPLE_BOOKINGS.map(b => ({
     checkIn:  new Date(b.checkIn  + 'T00:00:00'),
@@ -42,14 +78,33 @@ function loadSampleData() {
   }));
 }
 
+// JSONP helper — avoids CORS on Google Apps Script GET endpoints
+function fetchJsonp(url) {
+  return new Promise((resolve, reject) => {
+    const cb = '_cb' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    window[cb] = data => {
+      delete window[cb];
+      script.remove();
+      resolve(data);
+    };
+    script.onerror = () => {
+      delete window[cb];
+      script.remove();
+      reject(new Error('JSONP request failed'));
+    };
+    script.src = `${url}&callback=${cb}`;
+    document.head.appendChild(script);
+  });
+}
+
 async function fetchAvailability() {
   if (!CONFIG.appsScriptUrl || CONFIG.appsScriptUrl === 'YOUR_APPS_SCRIPT_URL') {
     document.getElementById('sheets-banner').hidden = false;
     return;
   }
   try {
-    const res  = await fetch(`${CONFIG.appsScriptUrl}?action=availability`);
-    const data = await res.json();
+    const data = await fetchJsonp(`${CONFIG.appsScriptUrl}?action=availability`);
     if (data.bookings) {
       bookedRanges = data.bookings.map(b => ({
         checkIn:  new Date(b.checkIn  + 'T00:00:00'),
@@ -64,6 +119,7 @@ async function fetchAvailability() {
   }
 }
 
+// ── Calendar ──────────────────────────────────────────────────────────────────
 function getDateStatus(date) {
   for (const r of bookedRanges) {
     if (date >= r.checkIn && date < r.checkOut) {
@@ -82,7 +138,6 @@ function handleDayClick(dateStr) {
   const hint = document.getElementById('cal-hint');
 
   if (!pickerStart || (pickerStart && pickerEnd)) {
-    // Start a fresh selection
     pickerStart = clicked;
     pickerEnd   = null;
     document.getElementById('check_in').value  = dateStr;
@@ -91,7 +146,6 @@ function handleDayClick(dateStr) {
     if (hint) hint.textContent = 'Now click your check-out date.';
   } else {
     if (clicked <= pickerStart) {
-      // Clicked on or before start — restart from this date
       pickerStart = clicked;
       pickerEnd   = null;
       document.getElementById('check_in').value  = dateStr;
@@ -99,11 +153,10 @@ function handleDayClick(dateStr) {
       document.getElementById('check_out').min   = dateStr;
       if (hint) hint.textContent = 'Now click your check-out date.';
     } else {
-      // Complete the range
       pickerEnd = clicked;
       document.getElementById('check_out').value = dateStr;
       if (hint) hint.textContent = 'Dates selected — scroll down to complete your request.';
-      document.getElementById('booking').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      smoothScrollTo('booking');
     }
   }
   renderCalendar();
@@ -169,6 +222,7 @@ function renderCalendar() {
   cal.innerHTML = html;
 }
 
+// ── Form submission ───────────────────────────────────────────────────────────
 async function handleRequestSubmit(e) {
   e.preventDefault();
   clearFlash();
