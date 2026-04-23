@@ -15,6 +15,8 @@ const SAMPLE_BOOKINGS = [
 
 let bookedRanges = [];
 let calendarDate = new Date();
+let pickerStart  = null;
+let pickerEnd    = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   calendarDate.setDate(1);
@@ -59,7 +61,6 @@ async function fetchAvailability() {
     }
   } catch (e) {
     console.warn('Could not fetch availability:', e);
-    // Only show the banner if the sheet hasn't been configured
   }
 }
 
@@ -70,6 +71,42 @@ function getDateStatus(date) {
     }
   }
   return 'available';
+}
+
+function toDateStr(date) {
+  return date.toISOString().split('T')[0];
+}
+
+function handleDayClick(dateStr) {
+  const clicked = new Date(dateStr + 'T00:00:00');
+  const hint = document.getElementById('cal-hint');
+
+  if (!pickerStart || (pickerStart && pickerEnd)) {
+    // Start a fresh selection
+    pickerStart = clicked;
+    pickerEnd   = null;
+    document.getElementById('check_in').value  = dateStr;
+    document.getElementById('check_out').value = '';
+    document.getElementById('check_out').min   = dateStr;
+    if (hint) hint.textContent = 'Now click your check-out date.';
+  } else {
+    if (clicked <= pickerStart) {
+      // Clicked on or before start — restart from this date
+      pickerStart = clicked;
+      pickerEnd   = null;
+      document.getElementById('check_in').value  = dateStr;
+      document.getElementById('check_out').value = '';
+      document.getElementById('check_out').min   = dateStr;
+      if (hint) hint.textContent = 'Now click your check-out date.';
+    } else {
+      // Complete the range
+      pickerEnd = clicked;
+      document.getElementById('check_out').value = dateStr;
+      if (hint) hint.textContent = 'Dates selected — scroll down to complete your request.';
+      document.getElementById('booking').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+  renderCalendar();
 }
 
 function changeMonth(delta) {
@@ -97,18 +134,35 @@ function renderCalendar() {
   for (let i = 0; i < firstDay; i++) html += '<div></div>';
 
   for (let d = 1; d <= daysInMonth; d++) {
-    const date = new Date(year, month, d);
-    const isPast = date < today;
-    let cls = 'cal-day';
+    const date    = new Date(year, month, d);
+    const isPast  = date < today;
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+    let cls     = 'cal-day';
+    let onclick = '';
+
     if (isPast) {
       cls += ' cal-day--past';
     } else {
       const status = getDateStatus(date);
-      if (status === 'booked')  cls += ' cal-day--booked';
-      else if (status === 'pending') cls += ' cal-day--pending';
-      else cls += ' cal-day--available';
+      if (status === 'booked') {
+        cls += ' cal-day--booked';
+      } else if (status === 'pending') {
+        cls += ' cal-day--pending';
+      } else {
+        onclick = `onclick="handleDayClick('${dateStr}')"`;
+        const isStart = pickerStart && toDateStr(pickerStart) === dateStr;
+        const isEnd   = pickerEnd   && toDateStr(pickerEnd)   === dateStr;
+        const inRange = pickerStart && pickerEnd && date > pickerStart && date < pickerEnd;
+
+        if (isStart)      cls += ' cal-day--sel-start';
+        else if (isEnd)   cls += ' cal-day--sel-end';
+        else if (inRange) cls += ' cal-day--in-range';
+        else              cls += ' cal-day--available';
+      }
     }
-    html += `<div class="${cls}">${d}</div>`;
+
+    html += `<div class="${cls}" ${onclick}>${d}</div>`;
   }
 
   html += '</div>';
@@ -164,6 +218,11 @@ async function handleRequestSubmit(e) {
   btn.disabled    = false;
   btn.textContent = 'Send Request →';
   e.target.reset();
+  pickerStart = null;
+  pickerEnd   = null;
+  renderCalendar();
+  const hint = document.getElementById('cal-hint');
+  if (hint) hint.textContent = 'Click an available date to start selecting your stay.';
   document.getElementById('confirm-overlay').hidden = false;
 }
 

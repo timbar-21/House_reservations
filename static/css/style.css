@@ -335,6 +335,24 @@ a { text-decoration: none; }
 .cal-day--available {
   color: #16A34A;
   border: 1.5px solid #16A34A;
+  cursor: pointer;
+}
+.cal-day--available:hover {
+  background: #DCFCE7;
+}
+.cal-day--sel-start,
+.cal-day--sel-end {
+  background: var(--coral);
+  color: var(--white);
+  border: 1.5px solid var(--coral);
+  cursor: pointer;
+  font-weight: 700;
+}
+.cal-day--in-range {
+  background: rgba(207, 109, 56, 0.15);
+  color: var(--coral);
+  border: 1.5px solid rgba(207, 109, 56, 0.3);
+  cursor: pointer;
 }
 .cal-day--booked {
   color: #DC2626;
@@ -376,6 +394,14 @@ a { text-decoration: none; }
   color: var(--muted);
   margin-top: 0.75rem;
   text-align: center;
+}
+.cal-hint {
+  font-size: 0.78rem;
+  color: var(--coral);
+  font-weight: 500;
+  margin-top: 0.5rem;
+  text-align: center;
+  min-height: 1.2em;
 }
 
 /* ── Booking Section ─────────────────────────────────────────────────────── */
