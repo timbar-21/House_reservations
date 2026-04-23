@@ -3,7 +3,7 @@ const CONFIG = {
 };
 
 const PROPERTY = {
-  name: 'Longhitano Beach House',
+  name: 'Beach House at Grand Dunes',
   maxGuests: 10,
 };
 
